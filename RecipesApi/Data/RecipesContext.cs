@@ -6,8 +6,6 @@ namespace RecipesApi.Data {
 		public DbSet<User> Users { get; set; }
 		public DbSet<Recipe> Recipes { get; set; }
 
-		// TODO: actually connect to database...
-        protected override void OnConfiguring(DbContextOptionsBuilder options)
-            => options.UseSqlServer($"Data Source=");
+		public RecipesContext(DbContextOptions<RecipesContext> options) : base(options) {}
 	}
 }

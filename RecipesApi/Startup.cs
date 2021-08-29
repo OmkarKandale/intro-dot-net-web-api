@@ -71,6 +71,10 @@ namespace RecipesApi
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.GetValue<string>("Token")))
                     };
                 });
+
+                services.AddDbContext<RecipesContext>(options =>{
+                    options.UseSqlServer(Configuration.GetConnectionString("RecipeApp"));
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
