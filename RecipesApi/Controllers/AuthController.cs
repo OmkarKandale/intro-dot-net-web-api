@@ -6,20 +6,28 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.Extensions.Configuration;
+
 namespace RecipesApi.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class AuthController : ControllerBase
     {
+		public IConfiguration Configuration {get; set; }
+
+		public AuthController(IConfiguration configuration) {
+			Configuration = configuration;
+		}
         [HttpGet]
         public string Get()
         {
-			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("really_big_keyboard_cat"));
+            var section = Configuration.GetSection("JWT");
+			var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.GetValue<string>("Token")));
 			var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-			var issuer = "https://localhost:5001";
-			var audience = "https://localhost:5001";
-			var jwtValidity = DateTime.Now.AddMinutes(10);
+			var issuer = section.GetValue<string>("Issuer");
+			var audience = section.GetValue<string>("Audience");
+			var jwtValidity = DateTime.Now.AddHours(section.GetValue<int>("ExpirationHours"));
 
 			var token = new JwtSecurityToken(
 				issuer,

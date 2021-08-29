@@ -5,15 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
+using RecipesApi.Data;
 
 namespace RecipesApi
 {
@@ -29,7 +28,6 @@ namespace RecipesApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
             services.AddSwaggerGen(swagger =>
             {
@@ -55,6 +53,7 @@ namespace RecipesApi
                     }
                 });
             });
+
             services
                 .AddAuthentication(opt => {
                     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -62,13 +61,14 @@ namespace RecipesApi
                 })
                 .AddJwtBearer(options => {
                     options.RequireHttpsMetadata = false;
+                    var section = Configuration.GetSection("JWT");
                     options.TokenValidationParameters = new TokenValidationParameters() {
                         ValidateIssuer = true,
                         ValidateAudience = true,
                         ValidateIssuerSigningKey = true,
-                        ValidAudience = "https://localhost:5001",
-                        ValidIssuer = "https://localhost:5001",
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("really_big_keyboard_cat"))
+                        ValidAudience = section.GetValue<string>("Audience"),
+                        ValidIssuer = section.GetValue<string>("Issuer"),
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(section.GetValue<string>("Token")))
                     };
                 });
         }
